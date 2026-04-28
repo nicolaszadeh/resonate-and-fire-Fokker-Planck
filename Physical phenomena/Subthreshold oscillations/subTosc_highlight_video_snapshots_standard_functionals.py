@@ -96,6 +96,11 @@ DENSITY_YLIM = (-5, 25)
 CLIP_QUANTILE = 0.9999
 CLIP_GAMMA = 0.5
 
+if CLIP_QUANTILE is None:
+    clip_tag = ""
+else:
+    clip_tag = f"_clip{100 * CLIP_QUANTILE:.2f}".replace(".", "p")
+
 # Fonts, make them appear TeX-like
 
 USE_TEX = True
@@ -135,7 +140,7 @@ PLOT_DPI = 400
 # Video export parameters
 
 SAVE_VIDEO = True
-target_duration = 10.0
+target_duration = 20.0
 fps = 30
 VIDEO_DPI = 120
 
@@ -485,14 +490,18 @@ def build_common_norm(vmin, vmax):
 
 def build_clipped_power_norm_from_frames(frames, quantile=CLIP_QUANTILE, gamma=CLIP_GAMMA):
     vals = np.concatenate([frame.ravel() for frame in frames])
-    vmax_clip = np.quantile(vals, quantile)
+
+    if quantile is None:
+        vmax_clip = np.max(vals)
+    else:
+        vmax_clip = np.quantile(vals, quantile)
 
     if vmax_clip <= 0:
-        raise RuntimeError("The clipped vmax is non-positive; cannot build a meaningful colormap.")
+        raise RuntimeError("The vmax is non-positive; cannot build a meaningful colormap.")
 
     return PowerNorm(gamma=gamma, vmin=0.0, vmax=vmax_clip), vmax_clip
 
-def make_density_figure(frame2d, time_value, norm):
+def make_density_figure(frame2d, time_value, norm, minimalist_axes=False):
     fig, ax = plt.subplots(figsize=(6, 4))
 
     img = ax.imshow(
@@ -519,8 +528,21 @@ def make_density_figure(frame2d, time_value, norm):
     ax.set_xlim(*DENSITY_XLIM)
     ax.set_ylim(*DENSITY_YLIM)
 
-    apply_tex_ticks(ax)
-    plt.tight_layout()
+    if minimalist_axes:
+        ax.set_xticks([u_R, u_F])
+        ax.set_xticklabels([r"$u_{\rm R}$", r"$u_{\rm F}$"])
+        ax.set_yticks([0])
+        ax.set_yticklabels([r"$0$"])
+    else:
+        apply_tex_ticks(ax)
+
+    fig.subplots_adjust(
+        left=0.14,
+        right=0.86,
+        bottom=0.16,
+        top=0.90
+    )
+
     return fig, ax, img
 
 def save_snapshot(frame2d, time_value, idx, outdir, stem, norm):
@@ -528,7 +550,7 @@ def save_snapshot(frame2d, time_value, idx, outdir, stem, norm):
 
     base = os.path.join(outdir, f"{stem}_snapshot_{idx+1:02d}_t{time_value:.3f}")
     pdf_name = base + ".pdf"
-    fig.savefig(pdf_name, bbox_inches="tight")
+    fig.savefig(pdf_name, dpi=SNAPSHOT_DPI)
 
     plt.close(fig)
 
@@ -597,10 +619,10 @@ def save_snapshot_grid(frames, times_snap, outdir, stem, norm):
 
     grid_filename = os.path.join(
         outdir,
-        stem + "_3x3_snapshots_clip9999_window_uR_uF.pdf"
+        stem + f"_3x3_snapshots{clip_tag}_window_uR_uF.pdf"
     )
 
-    fig.savefig(grid_filename, dpi=SNAPSHOT_DPI, bbox_inches="tight")
+    fig.savefig(grid_filename, dpi=SNAPSHOT_DPI)
     plt.close(fig)
 
     return grid_filename
@@ -651,10 +673,15 @@ def save_curve_plot(t, y, xlabel, ylabel, title, filename_base, sci_y="auto", hi
     else:
         ax.set_ylabel(ylabel, rotation=0, labelpad=20)
 
-    plt.tight_layout()
+    fig.subplots_adjust(
+        left=0.20,
+        right=0.96,
+        bottom=0.18,
+        top=0.92
+    )
 
     pdf_name = filename_base + ".pdf"
-    fig.savefig(pdf_name, dpi=PLOT_DPI, bbox_inches="tight")
+    fig.savefig(pdf_name, dpi=PLOT_DPI)
     plt.close(fig)
 
 # Main
@@ -692,7 +719,6 @@ try:
     selected_set = set(int(k) for k in selected_indices)
 
     print("Snapshot indices =", snapshot_indices.tolist())
-    # print("Video indices    =", video_indices.tolist() if SAVE_VIDEO else [])
 
     # Allocate functionals of interest only
 
@@ -764,7 +790,10 @@ try:
             gamma=CLIP_GAMMA
         )
 
-        print("Snapshot norm: clip 99.99 vmax =", snapshot_vmax_clip)
+        if CLIP_QUANTILE is None:
+            print("Snapshot norm: no clipping, vmax =", snapshot_vmax_clip)
+        else:
+            print(f"Snapshot norm: clip {100 * CLIP_QUANTILE:.2f}% vmax =", snapshot_vmax_clip)
 
         if SAVE_INDIVIDUAL_SNAPSHOTS:
             for k_snap, idx in enumerate(snapshot_indices):
@@ -773,7 +802,7 @@ try:
                     time_value=times[int(idx)],
                     idx=k_snap,
                     outdir=snapshots_dir,
-                    stem=file_stem + "_clip9999",
+                    stem=file_stem + clip_tag,
                     norm=snapshot_norm
                 )
 
@@ -797,7 +826,6 @@ try:
             y=activities,
             xlabel=r"$t$ (s)",
             ylabel=r"$N(t)$" + "\n\n" + r"(Hz)",
-            # title=r"Activity",
             title=None,
             filename_base=diag_base + "_activity",
             sci_y="auto"
@@ -809,7 +837,6 @@ try:
             y=entropies,
             xlabel=r"$t$ (s)",
             ylabel=r"$S(t)$",
-            # title=r"Entropy",
             title=None,
             filename_base=diag_base + "_entropy",
             sci_y=False,
@@ -822,7 +849,6 @@ try:
             y=fishers,
             xlabel=r"$t$ (s)",
             ylabel=r"$I(f)(t)$",
-            # title=r"Fisher information",
             title=None,
             filename_base=diag_base + "_fisher",
             sci_y="auto",
@@ -835,7 +861,6 @@ try:
             y=mean_x_values,
             xlabel=r"$t$ (s)",
             ylabel=r"$X(t)$" + "\n\n" + r"(volt)",
-            # title=r"Mean potential",
             title=None,
             filename_base=diag_base + "_mean_x",
             sci_y=False
@@ -863,12 +888,29 @@ try:
                 gamma=CLIP_GAMMA
             )
 
-            print("Video norm: clip 99.99 vmax =", video_vmax_clip)
+            if CLIP_QUANTILE is None:
+                print("Video norm: no clipping, vmax =", video_vmax_clip)
+            else:
+                print(f"Video norm: clip {100 * CLIP_QUANTILE:.2f}% vmax =", video_vmax_clip)
+
+            writer = animation.FFMpegWriter(
+                fps=fps,
+                codec="libx264",
+                bitrate=-1,
+                extra_args=[
+                    "-preset", "ultrafast",
+                    "-crf", "23",
+                    "-pix_fmt", "yuv420p",
+                ]
+            )
+
+            # Standard video
 
             fig, ax, img = make_density_figure(
                 frame2d=frames_video[0],
                 time_value=times_video[0],
-                norm=video_norm
+                norm=video_norm,
+                minimalist_axes=False
             )
 
             def update(frame_idx):
@@ -884,24 +926,48 @@ try:
                 blit=False
             )
 
-            writer = animation.FFMpegWriter(
-                fps=fps,
-                codec="libx264",
-                bitrate=-1,
-                extra_args=[
-                    "-preset", "ultrafast",
-                    "-crf", "23",
-                    "-pix_fmt", "yuv420p",
-                ]
-            )
-
-            video_filename_clip = video_filename.replace(".mp4", "_clip9999.mp4")
+            video_filename_clip = video_filename.replace(".mp4", f"{clip_tag}.mp4")
             ani.save(video_filename_clip, writer=writer, dpi=VIDEO_DPI)
 
             print("Video saved to:", os.path.abspath(video_filename_clip))
             print(f"Chosen fps = {fps}, duration of approximatively {len(frames_video) / fps:.3f} s")
 
             plt.close(fig)
+
+            # Minimalist axes video:
+            # x-axis: only u_R and u_F
+            # v-axis: only 0
+
+            fig_min, ax_min, img_min = make_density_figure(
+                frame2d=frames_video[0],
+                time_value=times_video[0],
+                norm=video_norm,
+                minimalist_axes=True
+            )
+
+            def update_minimalist_axes(frame_idx):
+                img_min.set_data(frames_video[frame_idx].T)
+                ax_min.set_title(rf"$t = {times_video[frame_idx]:g}\,$s")
+                return (img_min,)
+
+            ani_min = animation.FuncAnimation(
+                fig_min,
+                update_minimalist_axes,
+                frames=len(frames_video),
+                interval=1000 / fps,
+                blit=False
+            )
+
+            video_filename_minimalist = video_filename.replace(
+                ".mp4",
+                f"{clip_tag}_minimal_axes_uR_uF_v0.mp4"
+            )
+
+            ani_min.save(video_filename_minimalist, writer=writer, dpi=VIDEO_DPI)
+
+            print("Minimalist axes video saved to:", os.path.abspath(video_filename_minimalist))
+
+            plt.close(fig_min)
 
 except Exception as e:
     print("Simulation failed:", e)
