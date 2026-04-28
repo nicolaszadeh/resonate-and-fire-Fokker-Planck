@@ -67,7 +67,7 @@ v_max = 40
 size_v = v_max - v_min
 V = max(abs(v_min), abs(v_max))
 
-n = 50
+n = 20
 
 # Discretization in time
 
@@ -111,6 +111,7 @@ mpl.rcParams.update({
 # Choice of saved plots
 
 SAVE_STEADY_STATE_PLOT = True
+SAVE_STEADY_STATE_3D_VIEWS = True
 
 SAVE_RELATIVE_ENTROPY_PLOT = True
 SAVE_RELATIVE_FISHER_PLOT = True
@@ -130,7 +131,6 @@ def play_beep(frequency=440.0, duration=0.3):
         import winsound
         winsound.Beep(int(frequency), int(1000 * duration))
     else:
-        # fallback: terminal bell
         print("\a", end="", flush=True)
 
 
@@ -145,7 +145,7 @@ def play_success_sound():
 def play_failure_sound():
     play_beep(300, 0.2)
     time.sleep(0.05)
-    play_beep(270,0.2)
+    play_beep(270, 0.2)
     time.sleep(0.05)
     play_beep(240, 0.2)
     time.sleep(0.05)
@@ -549,10 +549,8 @@ def make_density_figure(frame2d, title, norm, colorbar_label=r"$f$"):
     cbar.ax.yaxis.set_label_position("right")
     cbar.ax.yaxis.label.set_verticalalignment("center")
     apply_tex_colorbar_ticks(cbar)
-    
-    # To get proper scaling when the values don't get too spread out, comment
-    # out if necessary, has to be done a posteriori
-    ax.set_ylim(-size_x/2,size_x/2)
+
+    ax.set_ylim(-size_x / 2, size_x / 2)
 
     ax.set_xlabel(r"$x$")
     ax.set_ylabel(r"$v$", rotation=0, labelpad=15)
@@ -581,7 +579,6 @@ def save_steady_state_plot(f_inf, N_inf, filename_base):
     Nlatex = rf"{Nmant} \times 10^{{{int(Nexp)}}}"
     fig, ax, img = make_density_figure(
         frame2d=f_plot,
-        # title=rf"Numerical steady state, $N_\infty = {Nlatex}\,$Hz",
         title=rf"$N_\infty = {Nlatex}\,$Hz",
         norm=norm,
         colorbar_label=r"$f_\infty$"
@@ -593,12 +590,12 @@ def save_steady_state_plot(f_inf, N_inf, filename_base):
     apply_tex_ticks(ax)
 
     plt.close(fig)
-    
+
+
 def save_steady_state_3d_plot(f_inf, N_inf, filename_base):
 
-    # Crop in v before plotting, has to be done a posteriori for scaling
     v_min_plot = -size_x / 2
-    v_max_plot =  size_x / 2
+    v_max_plot = size_x / 2
     v_mask = (v >= v_min_plot) & (v <= v_max_plot)
 
     v_plot = v[v_mask]
@@ -660,6 +657,108 @@ def save_steady_state_3d_plot(f_inf, N_inf, filename_base):
     plt.close(fig)
 
 
+def save_steady_state_3d_views(f_inf, filename_stem):
+    """
+    Save several 3D steady-state views without colorbar.
+
+    These are additional visualization PDFs. The original steady-state outputs
+    are kept unchanged.
+    """
+
+    f_plot = maybe_smooth(f_inf)
+
+    xmin, xmax = -21, 9
+    vmin, vmax = -5, 25
+
+    mask_x = (x >= xmin) & (x <= xmax)
+    mask_v = (v >= vmin) & (v <= vmax)
+
+    x_sub = x[mask_x]
+    v_sub = v[mask_v]
+    Z_sub = f_plot[np.ix_(mask_x, mask_v)]
+
+    stride = 2
+    x_sub_p = x_sub[::stride]
+    v_sub_p = v_sub[::stride]
+    Z_sub_p = Z_sub[::stride, ::stride]
+
+    X3, V3 = np.meshgrid(x_sub_p, v_sub_p, indexing="ij")
+
+    views = [
+        ("view_current_like", 25, -60),
+        ("view_front_v", 20, -90),
+        ("view_front_x", 20, 0),
+        ("view_top", 90, -90),
+        ("view_low_along_v", 5, -90),
+        ("view_low_along_x", 5, 0),
+        ("view_diagonal_low", 8, -45),
+        ("view_diagonal_high", 35, -45),
+        ("view_opposite", 25, 120),
+    ]
+
+    outdir_3d = os.path.join(steady_state_dir, "steady_state_3d_views")
+    os.makedirs(outdir_3d, exist_ok=True)
+
+    zmax = np.max(Z_sub_p)
+
+    for name, elev, azim in views:
+        fig = plt.figure(figsize=(7, 5))
+        ax = fig.add_subplot(111, projection="3d")
+
+        ax.plot_surface(
+            X3, V3, Z_sub_p,
+            cmap=colormap,
+            linewidth=0,
+            antialiased=True
+        )
+
+        ax.view_init(elev=elev, azim=azim)
+
+        ax.set_xlim(xmin, xmax)
+        ax.set_ylim(vmin, vmax)
+        ax.set_zlim(0.0, zmax)
+
+        ax.set_xlabel(r"$x$", labelpad=8)
+        ax.set_ylabel(r"$v$", labelpad=8)
+        ax.zaxis.set_rotate_label(False)
+        ax.set_zlabel(r"$f_\infty$", rotation=0, labelpad=8)
+
+        xticks = np.array([-21, -15, -9, -3, u_R, u_F], dtype=float)
+        xticks = np.unique(np.sort(xticks))
+
+        ax.set_xticks(xticks)
+        ax.set_xticklabels([
+            r"$u_{\rm R}$" if np.isclose(val, u_R) else
+            r"$u_{\rm F}$" if np.isclose(val, u_F) else
+            ""
+            for val in xticks
+        ])
+
+        yticks = np.array([-5, 0, 5, 10, 15, 20, 25], dtype=float)
+        ax.set_yticks(yticks)
+        ax.set_yticklabels([
+            r"$0$" if np.isclose(val, 0) else ""
+            for val in yticks
+        ])
+
+        zticks = np.linspace(0, zmax, 5)
+        ax.set_zticks(zticks)
+
+        local_stem = rf"elev{elev}_azim{azim}"
+
+        pdf_name = os.path.join(
+            outdir_3d,
+            f"{filename_stem}_{local_stem}_steady_state_3D_no_colorbar_{name}.pdf"
+        )
+
+        fig.savefig(pdf_name, dpi=DENSITY_DPI, bbox_inches="tight")
+        plt.close(fig)
+
+        print("Extra 3D view saved:", os.path.abspath(pdf_name))
+
+    print("Extra 3D views folder:", os.path.abspath(outdir_3d))
+
+
 def save_curve_plot(t, y, xlabel, ylabel, title, filename_base, sci_y="auto", hide_yticks=False):
     fig, ax = plt.subplots(figsize=(6, 4))
     ax.plot(t, y, linewidth=1.8)
@@ -687,22 +786,22 @@ def save_curve_plot(t, y, xlabel, ylabel, title, filename_base, sci_y="auto", hi
         ax.yaxis.set_major_formatter(tex_sci_tick_formatter())
     else:
         ax.yaxis.set_major_formatter(tex_relevant_tick_formatter())
-    
+
     if hide_yticks:
         ax.set_yticks([])
         ax.tick_params(axis="y", which="both",
                        left=False, right=False, labelleft=False)
-    
+
         text = ax.set_ylabel(ylabel, rotation=0, labelpad=10)
-    
+
         fig = ax.figure
         fig.canvas.draw()
-    
+
         bbox = text.get_window_extent()
         width_in_points = bbox.width * 72.0 / fig.dpi
-    
+
         adaptive_labelpad = 5 + 0.6 * width_in_points
-    
+
         ax.yaxis.labelpad = adaptive_labelpad
     else:
         ax.set_ylabel(ylabel, rotation=0, labelpad=20)
@@ -802,16 +901,22 @@ def rerun_after_reference(f_inf, N_inf):
 
     if SAVE_STEADY_STATE_PLOT:
         save_steady_state_plot(
-        f_inf=f_inf,
-        N_inf=N_inf,
-        filename_base=steady_base
-    )
+            f_inf=f_inf,
+            N_inf=N_inf,
+            filename_base=steady_base
+        )
 
         save_steady_state_3d_plot(
-        f_inf=f_inf,
-        N_inf=N_inf,
-        filename_base=steady_base
-    )
+            f_inf=f_inf,
+            N_inf=N_inf,
+            filename_base=steady_base
+        )
+
+        if SAVE_STEADY_STATE_3D_VIEWS:
+            save_steady_state_3d_views(
+                f_inf=f_inf,
+                filename_stem=file_stem
+            )
 
     times = np.linspace(0.0, T, Nt, dtype=np.float64)
 
@@ -844,7 +949,6 @@ def rerun_after_reference(f_inf, N_inf):
             xlabel=r"$t$ (s)",
             ylabel=r"$\mathcal{H}_{\mathrm{rel}}(t)$",
             title=None,
-            # title=r"Relative entropy",
             filename_base=diag_base + "_relative_entropy",
             sci_y="auto",
             hide_yticks=True
@@ -857,7 +961,6 @@ def rerun_after_reference(f_inf, N_inf):
             xlabel=r"$t$ (s)",
             ylabel=r"$\mathcal{I}_{\mathrm{rel}}(t)$",
             title=None,
-            # title=r"Relative Fisher information",
             filename_base=diag_base + "_relative_fisher",
             sci_y="auto",
             hide_yticks=True

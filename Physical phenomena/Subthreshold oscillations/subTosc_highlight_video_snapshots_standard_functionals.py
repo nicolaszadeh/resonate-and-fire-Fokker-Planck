@@ -2,7 +2,7 @@
 """
 Vectorized tri banded solver and optional:
     - video f(x,v,t)
-    - 9 equally-spaced snapshots 
+    - 9 equally-spaced snapshots as one 3x3 figure
     - mean voltage
     - activity
     - entropy
@@ -40,7 +40,7 @@ u_F = 9
 u_R = 4
 sigma_rho = 0.001
 
-# Grid 
+# Grid
 x_min = -31
 x_max = u_F
 size_x = x_max - x_min
@@ -51,7 +51,7 @@ v_max = 40
 size_v = v_max - v_min
 V = max(abs(v_min), abs(v_max))
 
-n = 50
+n = 20
 
 # Electric parameters
 b = 1
@@ -62,17 +62,39 @@ tau = 5
 a_0 = 0.5
 a_1 = 0.5
 
+if (1 / tau**2 - 4 * omega_0**2) < 0:
+    print("Oscillatory framework")
+else:
+    raise RuntimeError("Non-oscillatory framework")
+
 # Time parameters
 T = 10
 Nt = 50001
 delta_t = np.float64(T / (Nt - 1))
 
-# Colormap / normalization - need to make big discrepancies in values appear
-# without ruining legibility
+# Colormap / normalization
 
 colormap = "viridis"
 powernorm = True
 power_gamma = 0.5
+
+# Visualization window
+# To get proper scaling when the pdf point cloud doesn't get too spread out, comment
+# out if necessary, I would advise first doing a trial run with small n 
+# to see where the phenomenon happens then choosing a window adapted 
+# to proper observation
+
+DENSITY_XLIM = (-21, 9)
+DENSITY_YLIM = (-5, 25)
+
+# Clipped normalization
+# To get proper scaling when the pdf values don't get too spread out, comment
+# out if necessary, I would advise first doing a trial run with small n 
+# to see where the phenomenon happens then choosing a window adapted 
+# to proper observation
+
+CLIP_QUANTILE = 0.9999
+CLIP_GAMMA = 0.5
 
 # Fonts, make them appear TeX-like
 
@@ -96,6 +118,9 @@ sigma_v_vis = 0.8
 # Snapshot export parameters
 
 SAVE_SNAPSHOTS = True
+SAVE_INDIVIDUAL_SNAPSHOTS = False
+SAVE_SNAPSHOT_GRID = True
+
 NUM_SNAPSHOTS = 9
 SNAPSHOT_DPI = 400
 
@@ -126,7 +151,6 @@ def play_beep(frequency=440.0, duration=0.3):
         import winsound
         winsound.Beep(int(frequency), int(1000 * duration))
     else:
-        # fallback: terminal bell
         print("\a", end="", flush=True)
 
 
@@ -141,7 +165,7 @@ def play_success_sound():
 def play_failure_sound():
     play_beep(300, 0.2)
     time.sleep(0.05)
-    play_beep(270,0.2)
+    play_beep(270, 0.2)
     time.sleep(0.05)
     play_beep(240, 0.2)
     time.sleep(0.05)
@@ -459,6 +483,15 @@ def build_common_norm(vmin, vmax):
         return PowerNorm(gamma=power_gamma, vmin=vmin, vmax=vmax)
     return Normalize(vmin=vmin, vmax=vmax)
 
+def build_clipped_power_norm_from_frames(frames, quantile=CLIP_QUANTILE, gamma=CLIP_GAMMA):
+    vals = np.concatenate([frame.ravel() for frame in frames])
+    vmax_clip = np.quantile(vals, quantile)
+
+    if vmax_clip <= 0:
+        raise RuntimeError("The clipped vmax is non-positive; cannot build a meaningful colormap.")
+
+    return PowerNorm(gamma=gamma, vmin=0.0, vmax=vmax_clip), vmax_clip
+
 def make_density_figure(frame2d, time_value, norm):
     fig, ax = plt.subplots(figsize=(6, 4))
 
@@ -482,10 +515,9 @@ def make_density_figure(frame2d, time_value, norm):
     ax.set_xlabel(r"$x$")
     ax.set_ylabel(r"$v$", rotation=0, labelpad=15)
     ax.set_title(rf"$t = {time_value:g}\,$s")
-    
-    # To get proper scaling when the values don't get too spread out, comment
-    # if necessary
-    ax.set_ylim(-size_x/2, size_x/2)
+
+    ax.set_xlim(*DENSITY_XLIM)
+    ax.set_ylim(*DENSITY_YLIM)
 
     apply_tex_ticks(ax)
     plt.tight_layout()
@@ -499,6 +531,79 @@ def save_snapshot(frame2d, time_value, idx, outdir, stem, norm):
     fig.savefig(pdf_name, bbox_inches="tight")
 
     plt.close(fig)
+
+def save_snapshot_grid(frames, times_snap, outdir, stem, norm):
+    fig, axes = plt.subplots(
+        3, 3,
+        figsize=(9.5, 8.2),
+        sharex=True,
+        sharey=True
+    )
+
+    last_img = None
+
+    for k, (ax, frame, tval) in enumerate(zip(axes.flat, frames, times_snap)):
+        last_img = ax.imshow(
+            frame.T,
+            origin="lower",
+            aspect="auto",
+            extent=[x[0], x[-1], v[0], v[-1]],
+            cmap=colormap,
+            norm=norm,
+            interpolation="nearest"
+        )
+
+        ax.set_xlim(*DENSITY_XLIM)
+        ax.set_ylim(*DENSITY_YLIM)
+
+        ax.set_title(rf"$t={tval:g}\,$s", fontsize=11)
+
+        row = k // 3
+        col = k % 3
+
+        if row == 2:
+            ax.set_xlabel(r"$x$")
+            ax.set_xticks([u_R, u_F])
+            ax.set_xticklabels([r"$u_{\rm R}$", r"$u_{\rm F}$"])
+            ax.tick_params(axis="x", labelbottom=True)
+        else:
+            ax.tick_params(axis="x", which="both", bottom=False, labelbottom=False)
+
+        if col == 0:
+            ax.set_ylabel(r"$v$", rotation=0, labelpad=12)
+            ax.set_yticks([0, 10, 20])
+            ax.tick_params(axis="y", labelleft=True)
+        else:
+            ax.tick_params(axis="y", which="both", left=False, labelleft=False)
+
+    fig.subplots_adjust(
+        left=0.08,
+        right=0.88,
+        bottom=0.08,
+        top=0.93,
+        wspace=0.08,
+        hspace=0.20
+    )
+
+    bottom = axes[-1, 0].get_position().y0
+    top = axes[0, 0].get_position().y1
+
+    cbar_ax = fig.add_axes([0.90, bottom, 0.025, top - bottom])
+    cbar = fig.colorbar(last_img, cax=cbar_ax)
+    cbar.set_label(r"$f$", rotation=0, labelpad=18, fontsize=16)
+    cbar.ax.yaxis.set_label_position("right")
+    cbar.ax.yaxis.label.set_verticalalignment("center")
+    apply_tex_colorbar_ticks(cbar)
+
+    grid_filename = os.path.join(
+        outdir,
+        stem + "_3x3_snapshots_clip9999_window_uR_uF.pdf"
+    )
+
+    fig.savefig(grid_filename, dpi=SNAPSHOT_DPI, bbox_inches="tight")
+    plt.close(fig)
+
+    return grid_filename
 
 def save_curve_plot(t, y, xlabel, ylabel, title, filename_base, sci_y="auto", hide_yticks=False):
     fig, ax = plt.subplots(figsize=(6, 4))
@@ -526,22 +631,22 @@ def save_curve_plot(t, y, xlabel, ylabel, title, filename_base, sci_y="auto", hi
         ax.yaxis.set_major_formatter(tex_sci_tick_formatter())
     else:
         ax.yaxis.set_major_formatter(tex_relevant_tick_formatter())
-    
+
     if hide_yticks:
         ax.set_yticks([])
         ax.tick_params(axis="y", which="both",
                        left=False, right=False, labelleft=False)
-    
+
         text = ax.set_ylabel(ylabel, rotation=0, labelpad=10)
-    
+
         fig = ax.figure
         fig.canvas.draw()
-    
+
         bbox = text.get_window_extent()
         width_in_points = bbox.width * 72.0 / fig.dpi
-    
+
         adaptive_labelpad = 5 + 0.6 * width_in_points
-    
+
         ax.yaxis.labelpad = adaptive_labelpad
     else:
         ax.set_ylabel(ylabel, rotation=0, labelpad=20)
@@ -555,10 +660,6 @@ def save_curve_plot(t, y, xlabel, ylabel, title, filename_base, sci_y="auto", hi
 # Main
 
 try:
-    if (1 / tau**2 - 4 * omega_0**2) < 0:
-        print("Oscillatory framework")
-    else:
-        raise RuntimeError("Non-oscillatory framework")
 
     np.set_printoptions(precision=25)
 
@@ -649,29 +750,44 @@ try:
 
     print(f"Simulation done in {time.time() - start_time:.2f} s")
 
-    # Common norm
-
-    vmin = 0.0
-    vmax = vmax_global
-
-    if vmax <= 0:
-        raise RuntimeError("All plotted values are non-positive; cannot build a meaningful colormap.")
-
-    common_norm = build_common_norm(vmin=vmin, vmax=vmax)
-
-    # Save snapshots
+    # Save snapshots / snapshot grid
 
     if SAVE_SNAPSHOTS:
         print("Snapshot times   =", [float(times[idx]) for idx in snapshot_indices])
-        for k_snap, idx in enumerate(snapshot_indices):
-            save_snapshot(
-                frame2d=stored_frames[int(idx)],
-                time_value=times[int(idx)],
-                idx=k_snap,
+
+        snapshot_frames = [stored_frames[int(idx)] for idx in snapshot_indices]
+        snapshot_times = [times[int(idx)] for idx in snapshot_indices]
+
+        snapshot_norm, snapshot_vmax_clip = build_clipped_power_norm_from_frames(
+            snapshot_frames,
+            quantile=CLIP_QUANTILE,
+            gamma=CLIP_GAMMA
+        )
+
+        print("Snapshot norm: clip 99.99 vmax =", snapshot_vmax_clip)
+
+        if SAVE_INDIVIDUAL_SNAPSHOTS:
+            for k_snap, idx in enumerate(snapshot_indices):
+                save_snapshot(
+                    frame2d=stored_frames[int(idx)],
+                    time_value=times[int(idx)],
+                    idx=k_snap,
+                    outdir=snapshots_dir,
+                    stem=file_stem + "_clip9999",
+                    norm=snapshot_norm
+                )
+
+        if SAVE_SNAPSHOT_GRID:
+            grid_filename = save_snapshot_grid(
+                frames=snapshot_frames,
+                times_snap=snapshot_times,
                 outdir=snapshots_dir,
                 stem=file_stem,
-                norm=common_norm
+                norm=snapshot_norm
             )
+
+            print("Saved snapshot grid to:")
+            print(os.path.abspath(grid_filename))
 
     # Save functionals of interest
 
@@ -741,10 +857,18 @@ try:
             frames_video = np.array([stored_frames[int(idx)] for idx in video_indices], dtype=np.float64)
             times_video = np.array([times[int(idx)] for idx in video_indices], dtype=np.float64)
 
+            video_norm, video_vmax_clip = build_clipped_power_norm_from_frames(
+                frames_video,
+                quantile=CLIP_QUANTILE,
+                gamma=CLIP_GAMMA
+            )
+
+            print("Video norm: clip 99.99 vmax =", video_vmax_clip)
+
             fig, ax, img = make_density_figure(
                 frame2d=frames_video[0],
                 time_value=times_video[0],
-                norm=common_norm
+                norm=video_norm
             )
 
             def update(frame_idx):
@@ -771,9 +895,10 @@ try:
                 ]
             )
 
-            ani.save(video_filename, writer=writer, dpi=VIDEO_DPI)
+            video_filename_clip = video_filename.replace(".mp4", "_clip9999.mp4")
+            ani.save(video_filename_clip, writer=writer, dpi=VIDEO_DPI)
 
-            print("Video saved to:", os.path.abspath(video_filename))
+            print("Video saved to:", os.path.abspath(video_filename_clip))
             print(f"Chosen fps = {fps}, duration of approximatively {len(frames_video) / fps:.3f} s")
 
             plt.close(fig)
