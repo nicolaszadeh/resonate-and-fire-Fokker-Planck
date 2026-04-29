@@ -51,7 +51,7 @@ v_max = 30
 size_v = v_max - v_min
 V = max(abs(v_min), abs(v_max))
 
-n = 30
+n = 18
 
 # Electric parameters
 b = 0.5
@@ -620,12 +620,20 @@ def save_snapshot_grid(frames, times_snap, outdir, stem, norm):
 
     return grid_filename
 
-def save_curve_plot(t, y, xlabel, ylabel, title, filename_base, sci_y="auto", hide_yticks=False):
-    fig, ax = plt.subplots(figsize=(6, 4))
+def save_curve_plot(t, y, xlabel, ylabel, title, filename_base,
+                    sci_y="auto", hide_yticks=False):
+    fig = plt.figure(figsize=(6, 4))
+
+    # Fixed axes box for all curve plots:
+    # [left, bottom, width, height] in figure coordinates.
+    ax = fig.add_axes([0.13, 0.16, 0.84, 0.74])
+
     ax.plot(t, y, linewidth=1.8)
 
     ax.set_xlabel(xlabel)
-    ax.set_title(title)
+
+    if title is not None:
+        ax.set_title(title)
 
     ax.xaxis.set_major_formatter(tex_relevant_tick_formatter())
 
@@ -652,29 +660,13 @@ def save_curve_plot(t, y, xlabel, ylabel, title, filename_base, sci_y="auto", hi
         ax.tick_params(axis="y", which="both",
                        left=False, right=False, labelleft=False)
 
-        text = ax.set_ylabel(ylabel, rotation=0, labelpad=10)
-
-        fig = ax.figure
-        fig.canvas.draw()
-
-        bbox = text.get_window_extent()
-        width_in_points = bbox.width * 72.0 / fig.dpi
-
-        adaptive_labelpad = 5 + 0.6 * width_in_points
-
-        ax.yaxis.labelpad = adaptive_labelpad
-    else:
-        ax.set_ylabel(ylabel, rotation=0, labelpad=20)
-
-    fig.subplots_adjust(
-        left=0.20,
-        right=0.96,
-        bottom=0.18,
-        top=0.92
-    )
+    ax.set_ylabel(ylabel, rotation=0, labelpad=20)
 
     pdf_name = filename_base + ".pdf"
+
+    # Important: do NOT use bbox_inches="tight".
     fig.savefig(pdf_name, dpi=PLOT_DPI)
+
     plt.close(fig)
 
 # Main
