@@ -112,6 +112,7 @@ mpl.rcParams.update({
 
 SAVE_STEADY_STATE_PLOT = True
 SAVE_STEADY_STATE_3D_VIEWS = True
+SAVE_STEADY_STATE_3D_ZOOMED = True
 
 SAVE_RELATIVE_ENTROPY_PLOT = True
 SAVE_RELATIVE_FISHER_PLOT = True
@@ -677,7 +678,7 @@ def save_steady_state_3d_views(f_inf, filename_stem):
     v_sub = v[mask_v]
     Z_sub = f_plot[np.ix_(mask_x, mask_v)]
 
-    stride = 2
+    stride = 1
     x_sub_p = x_sub[::stride]
     v_sub_p = v_sub[::stride]
     Z_sub_p = Z_sub[::stride, ::stride]
@@ -699,7 +700,7 @@ def save_steady_state_3d_views(f_inf, filename_stem):
     outdir_3d = os.path.join(steady_state_dir, "steady_state_3d_views")
     os.makedirs(outdir_3d, exist_ok=True)
 
-    zmax = np.max(Z_sub_p)
+    zmax = np.max(f_plot)
 
     for name, elev, azim in views:
         fig = plt.figure(figsize=(7, 5))
@@ -755,6 +756,79 @@ def save_steady_state_3d_views(f_inf, filename_stem):
         plt.close(fig)
 
         print("Extra 3D view saved:", os.path.abspath(pdf_name))
+
+    print("Extra 3D views folder:", os.path.abspath(outdir_3d))
+    
+def save_steady_state_3d_zoomed(f_inf, filename_stem):
+    """
+    Save a several 3D steady-state zoomed-in view without colorbar.
+    """
+
+    f_plot = maybe_smooth(f_inf)
+
+    xmin, xmax = u_R-3,u_R+3
+    vmin, vmax = -2, 4
+
+    mask_x = (x >= xmin) & (x <= xmax)
+    mask_v = (v >= vmin) & (v <= vmax)
+
+    x_sub = x[mask_x]
+    v_sub = v[mask_v]
+    Z_sub = f_plot[np.ix_(mask_x, mask_v)]
+
+    stride = 1
+    x_sub_p = x_sub[::stride]
+    v_sub_p = v_sub[::stride]
+    Z_sub_p = Z_sub[::stride, ::stride]
+
+    X3, V3 = np.meshgrid(x_sub_p, v_sub_p, indexing="ij")
+
+    outdir_3d = os.path.join(steady_state_dir, "steady_state_3d_views")
+    os.makedirs(outdir_3d, exist_ok=True)
+
+    zmax = np.max(f_plot)
+
+    fig = plt.figure(figsize=(7, 5))
+    ax = fig.add_subplot(111, projection="3d")
+
+    ax.plot_surface(
+        X3, V3, Z_sub_p,
+        cmap=colormap,
+        linewidth=0,
+        antialiased=True
+    )
+    
+    elev=25
+    azim=-60
+    
+    ax.view_init(elev=elev, azim=azim)
+
+    ax.set_xticks([u_R - 3, u_R, u_R + 3])
+    ax.set_xticklabels([r"$u_R-3$", r"$u_R$", r"$u_R+3$"])
+    
+    ax.set_yticks([-2, 0, 4])
+    ax.set_yticklabels([r"$-2$", r"$0$", r"$4$"])
+    
+    # x ticks closer to the axis
+    ax.tick_params(axis="x", pad=-2)
+    
+    # v ticks farther from the axis
+    ax.tick_params(axis="y", pad=7)
+    
+    ax.set_zticks(np.linspace(0, zmax, 5))
+    ax.grid(True)
+
+    local_stem = rf"elev{elev}_azim{azim}"
+
+    pdf_name = os.path.join(
+        outdir_3d,
+        f"{filename_stem}_{local_stem}_steady_state_3D_zoomed_no_colorbar.pdf"
+    )
+
+    fig.savefig(pdf_name, dpi=DENSITY_DPI, bbox_inches="tight")
+    plt.close(fig)
+
+    print("Extra zoomed 3D view saved:", os.path.abspath(pdf_name))
 
     print("Extra 3D views folder:", os.path.abspath(outdir_3d))
 
@@ -914,6 +988,12 @@ def rerun_after_reference(f_inf, N_inf):
 
         if SAVE_STEADY_STATE_3D_VIEWS:
             save_steady_state_3d_views(
+                f_inf=f_inf,
+                filename_stem=file_stem
+            )
+            
+        if SAVE_STEADY_STATE_3D_ZOOMED:
+            save_steady_state_3d_zoomed(
                 f_inf=f_inf,
                 filename_stem=file_stem
             )
