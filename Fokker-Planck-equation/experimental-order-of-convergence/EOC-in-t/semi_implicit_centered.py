@@ -22,7 +22,6 @@ import os
 from datetime import datetime
 from scipy.linalg import solve_banded
 import sys
-import subprocess
 
 # Results file with timestamp
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -123,34 +122,44 @@ seq_Nt = [1600, 3200, 6400, 12800, 25600, 51200, 102400]
 
 mass_tol = 1e-12
 
-# Completion sound
+# Completion sounds
+
 USE_SOUND = True
 
-def play_beep(frequency=440.0, duration=0.3, volume=0.12):
+
+def play_sequence(notes, volume=0.12):
     if not USE_SOUND:
         return
 
-    if sys.platform.startswith("win"):
-        import winsound
-        winsound.Beep(int(frequency), int(1000 * duration))
-        return
+    import tempfile
+    import wave
+    import shutil
+    import subprocess
+
+    fs = 44100
+    pieces = []
+
+    # Build ONE continuous waveform (notes + silences)
+    for freq, duration in notes:
+        n = int(fs * duration)
+
+        if freq is None or freq == 0:
+            s = np.zeros(n)
+        else:
+            t = np.linspace(0.0, duration, n, endpoint=False)
+            s = volume * np.sin(2.0 * np.pi * freq * t)
+
+        pieces.append(s)
+
+    signal = np.concatenate(pieces)
+
+    audio = np.int16(signal * 32767)
+    stereo = np.column_stack([audio, audio]).ravel()
 
     path = None
 
     try:
-        import shutil
-        import tempfile
-        import wave
-
-        fs = 44100
-        n_samples = int(fs * duration)
-        t = np.linspace(0.0, duration, n_samples, endpoint=False)
-
-        signal = volume * np.sin(2.0 * np.pi * frequency * t)
-
-        audio_mono = np.int16(signal * 32767)
-        audio_stereo = np.column_stack([audio_mono, audio_mono]).ravel()
-
+        # Write temp wav
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
             path = tmp.name
 
@@ -158,29 +167,31 @@ def play_beep(frequency=440.0, duration=0.3, volume=0.12):
             w.setnchannels(2)
             w.setsampwidth(2)
             w.setframerate(fs)
-            w.writeframes(audio_stereo.tobytes())
+            w.writeframes(stereo.tobytes())
 
-        if sys.platform == "darwin":
+        # Platform playback
+        if sys.platform.startswith("win"):
+            import winsound
+            winsound.PlaySound(path, winsound.SND_FILENAME)
+
+        elif sys.platform == "darwin":
             player = shutil.which("afplay")
             if player is None:
                 raise RuntimeError("afplay not found")
-            cmd = [player, path]
+            subprocess.run([player, path],
+                           stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL)
 
         elif sys.platform.startswith("linux"):
             player = shutil.which("paplay") or shutil.which("pw-play")
             if player is None:
                 raise RuntimeError("Neither paplay nor pw-play was found")
-            cmd = [player, path]
+            subprocess.run([player, path],
+                           stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL)
 
         else:
             raise RuntimeError(f"Unsupported platform for sound: {sys.platform}")
-
-        subprocess.run(
-            cmd,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            check=False
-        )
 
     except Exception as e:
         print(f"\nSound notification failed: {e}")
@@ -188,27 +199,34 @@ def play_beep(frequency=440.0, duration=0.3, volume=0.12):
     finally:
         if path is not None:
             try:
+                # Windows may still hold the file briefly
+                if sys.platform.startswith("win"):
+                    time.sleep(0.2)
                 os.remove(path)
             except OSError:
                 pass
 
 
 def play_success_sound():
-    play_beep(700, 0.2)
-    time.sleep(0.005)
-    play_beep(700, 0.1)
-    time.sleep(0.05)
-    play_beep(900, 0.8)
+    play_sequence([
+        (700, 0.2),
+        (0,   0.1),
+        (700, 0.1),
+        (0,   0.1),
+        (900, 0.8),
+    ])
 
 
 def play_failure_sound():
-    play_beep(300, 0.2)
-    time.sleep(0.05)
-    play_beep(270, 0.2)
-    time.sleep(0.05)
-    play_beep(240, 0.2)
-    time.sleep(0.05)
-    play_beep(225, 0.8)
+    play_sequence([
+        (300, 0.2),
+        (0,   0.1),
+        (270, 0.2),
+        (0,   0.1),
+        (240, 0.2),
+        (0,   0.1),
+        (225, 0.8),
+    ])
 
 
 def safe_play_success_sound():
