@@ -4,7 +4,9 @@ Code, relevant figures and  used to illustrate and support:
 - the construction of a network of noisy resonate and fire neurons' pde model
 - the original associated numerical mass and positivity-preserving solver.
 
-[f_xv_Nx929_Nv1859_T0.4_Nt10001_20260428_183607_3x3_snapshots_clip9999_window_uR_uF.pdf](https://github.com/user-attachments/files/27519216/f_xv_Nx929_Nv1859_T0.4_Nt10001_20260428_183607_3x3_snapshots_clip9999_window_uR_uF.pdf)
+<p align="center">
+  <img src="additional-figures-and-material/reset-driven-snapshots.png" width="900">
+</p>
 
 # Description of the model
 The model comes from an heuristic mean-field limit of Izhikhevich's resonate and fire model (2001) in a small-kick-size and large number of neurons approximation.
