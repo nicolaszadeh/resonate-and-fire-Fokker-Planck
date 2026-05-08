@@ -109,10 +109,68 @@ Functionals of interest, such as mean voltage, activity, entropy, Fisher informa
 - The execution of the Python code will produce results on their computer.
 - The parameters are by default quite demanding, they can of course edit them to obtain less precision, but also different results from ours if they want to get different initial conditions or model parameters for example.
 - May they want to launch the scripts with demanding parameters, we implemented sound subroutines inside them which announce when the scripts are over (with a different melody depending on whether the execution was successful or not).
-- We insist on the fact that the codebase was intentionally organized so that each sub-repository can be used independently, without requiring the others.
+- We insist on the fact that the codebase was intentionally organized so that each sub-repository can be used independently, without requiring the others. Actually, at the exception of the "parallel-launcher" codes, all the codes can work by just having the code on one's machine, without any need for the entire sub-repository.
 
 # Requirements
-An environment.yml file is available at the root of the repository. The command 'conda env create -f environment.yml' (without the quotes) allows to reproduce the exact environment used to obtain our results. Without this, opening it in a text editor already allows to consult the list of packages used.
+
+An environment.yml file is available at the root of the repository.
+
+The command
+
+```bash
+conda env create -f environment.yml
+```
+
+allows users to recreate the environment used to produce the results presented in this repository.
+
+The file can also be inspected directly to consult the list of required packages.
+
+## LaTeX rendering for figures and videos
+
+Some scripts generate figures and videos using LaTeX-rendered labels (`text.usetex=True` in Matplotlib).
+
+### Linux
+
+```bash
+sudo apt install texlive-latex-extra dvipng cm-super
+rm -rf ~/.cache/matplotlib/tex.cache
+```
+
+### macOS
+
+Installing MacTeX is sufficient.
+
+### Windows
+
+Installing MiKTeX is sufficient.
+
+## Sound alerts
+
+Some long-running scripts include optional sound notifications announcing the completion status of the execution.
+
+### Linux
+
+One of the following programs is required:
+
+```bash
+sudo apt install pulseaudio-utils
+```
+
+or
+
+```bash
+sudo apt install pipewire-audio
+```
+
+depending on the audio backend used by the system.
+
+### macOS
+
+The sound system relies on the native `afplay` utility, which is available by default.
+
+### Windows
+
+The sound system relies on the native `winsound` Python module, available by default.
 
 # Compatibility
 All the codebase has been extensively tested on Windows, Linux and MacOS. 
