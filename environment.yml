@@ -1,0 +1,15 @@
+name: mathneuro
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy[version='<2.0']
+  - matplotlib
+  - ipython
+  - jupyter
+  - scipy
+  - cython
+  - sympy
+  - spyder
+  - python-sounddevice
+prefix: /home/nicolas/miniconda3/envs/mathneuro
