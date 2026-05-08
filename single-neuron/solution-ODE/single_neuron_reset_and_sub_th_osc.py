@@ -235,7 +235,7 @@ ax.text(0.03, ymax - 0.10, r"$v$", fontsize=14)
 
 fig1.tight_layout()
 fig1.savefig(
-    "Single neuron ODE rebound negative reset.pdf",
+    "single_neuron_ode_rebound_negative_reset.pdf",
     format="pdf",
     bbox_inches="tight"
 )
@@ -290,7 +290,7 @@ ax.text(-1.4, 1.13, r"$x(t)$", fontsize=14)
 
 fig2.tight_layout()
 fig2.savefig(
-    "Single neuron ODE marginal rebound negative reset.pdf",
+    "single_neuron_ode_marginal_rebound_negative_reset.pdf",
     format="pdf",
     bbox_inches="tight"
 )

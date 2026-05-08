@@ -234,8 +234,8 @@ for ax in axs:
     ax.label_outer()
     
     
-plt.savefig("BrianR&FSingleNeuron.pdf", format="pdf")
-plt.savefig("BrianR&FSingleNeurontight.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("brian_rf_single_neuron.pdf", format="pdf")
+plt.savefig("brian_rf_single_neuron_tight.pdf", format="pdf", bbox_inches="tight")
 
 plt.tight_layout()
 plt.show()

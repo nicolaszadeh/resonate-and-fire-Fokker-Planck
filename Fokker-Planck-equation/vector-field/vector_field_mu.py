@@ -101,7 +101,7 @@ ax.quiver(
 
 ax.legend(loc='lower left')
 
-plt.savefig("VectorField.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("vector_field.pdf", format="pdf", bbox_inches="tight")
 
 plt.tight_layout()
 plt.show()
