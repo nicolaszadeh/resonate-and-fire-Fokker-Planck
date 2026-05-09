@@ -7,7 +7,7 @@ The outputs can be found inside of an automatically created tree structure in a 
 The computation can be long if an important precision is asked for, a boolean 'USE_SOUND' is then implemented (by default at 'True') which plays a different melody in case of success or failure in the execution of the routine.
 
 If the user wants to obtain the video animations, they will need to install FFmpeg. To verify that FFmpeg is correctly installed, run 
-'''bash
+```bash
 ffmpeg -version 
 ``` 
 in a terminal.
