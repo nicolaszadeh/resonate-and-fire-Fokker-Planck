@@ -1,3 +1,4 @@
 *.pdf
 *.mp4
 *.npz
+!additional-figures-and-videos/figures/*.pdf
