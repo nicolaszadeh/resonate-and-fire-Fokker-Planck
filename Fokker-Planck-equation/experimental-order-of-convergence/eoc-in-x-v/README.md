@@ -1,5 +1,5 @@
 Each of the scripts bearing a scheme name produces a .csv spreadsheet as an output containing information pertaining to the experimental order of convergence of said scheme as well as its runtime.
-The parameters by default are demanding, I would advise the reader to first run them by commenting out the x,v grid's depth 'n' and the sequence of successive time-points' number 'seq_Nt' to replace them with the more reasonable values offered in commentary right above them. 
+The parameters by default are demanding, I would advise the reader to first run them by commenting out the number of time points 'Nt' and the sequence of successive grid depths 'seq_Nxv' to replace them with the more reasonable values offered in commentary right above them. 
 
 A boolean 'USE_SOUND' is at the disposal of the user (by default at 'True'), which allows to play success or failure melodies, which happens to be especially useful in the case of very long computations for example for large 'n' and element of 'seq_Nt'. 
 
