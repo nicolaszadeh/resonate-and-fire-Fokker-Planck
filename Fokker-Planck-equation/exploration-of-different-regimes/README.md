@@ -30,3 +30,5 @@ print(shutil.which("ffmpeg"))
 ```
 The path to the executable should then appear.
 
+It should be noted that once the execution of the scheme in itself is successful, the production of the videos usually takes a few minutes because of the format we used: this is not a sign of any malfunction and shouldn't alert the user. 
+In the meantime they can consult the .pdf figures which are produced quasi-instantaneously.
