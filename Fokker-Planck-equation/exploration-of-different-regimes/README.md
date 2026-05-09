@@ -6,21 +6,27 @@ The outputs can be found inside of an automatically created tree structure in a 
 
 The computation can be long if an important precision is asked for, a boolean 'USE_SOUND' is then implemented (by default at 'True') which plays a different melody in case of success or failure in the execution of the routine.
 
-If the user wants to obtain the video animations, they will need to install FFmpeg. To verify that FFmpeg is correctly installed, run '''bash
-ffmpeg -version ``` in a terminal.
+If the user wants to obtain the video animations, they will need to install FFmpeg. To verify that FFmpeg is correctly installed, run 
+'''bash
+ffmpeg -version 
+``` 
+in a terminal.
 Should FFmpeg be missing, it can be installed on:
 ## Linux
 ```bash
-sudo apt install ffmpeg```
+sudo apt install ffmpeg
+```
 ## macOS
 ```bash
-brew install ffmpeg```
+brew install ffmpeg
+```
 ## Windows
 From the website: ffmpeg.org/download.html.
 
 A simple test a posteriori is to run Python from a terminal, and run the following command:
 ```python
 import shutil
-print(shutil.where("ffmpeg"))```
+print(shutil.which("ffmpeg"))
+```
 The path to the executable should then appear.
 
