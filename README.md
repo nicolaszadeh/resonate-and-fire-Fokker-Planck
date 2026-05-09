@@ -105,7 +105,7 @@ As of May the 8th, 2026, the two-level-tree structure of the repository (barring
 Functionals of interest, such as mean voltage, activity, entropy, Fisher information (these last two quantities also being presented in a "relative to the long-time behaviour" form) are also displayed. All these outputs can be produced or not, depending on user-chosen booleans (by default at true). The long-time behaviour can be displayed in 2d or 3d form.
 
 # How to use
-- The user just has to download the sub-repository containing the code they are interested in.
+- The user just has to download the *sub*-repository containing the code they are interested in. Of course downloading the entire repository also works.
 - The execution of the Python code will produce results on their computer.
 - The parameters are by default quite demanding, they can of course edit them to obtain less precision, but also different results from ours if they want to get different initial conditions or model parameters for example.
 - May they want to launch the scripts with demanding parameters, we implemented sound subroutines inside them which announce when the scripts are over (with a different melody depending on whether the execution was successful or not).
@@ -127,7 +127,7 @@ The file can also be inspected directly to consult the list of required packages
 
 ## LaTeX rendering for figures and videos
 
-Some scripts generate figures and videos using LaTeX-rendered labels (`text.usetex=True` in Matplotlib).
+Some scripts generate figures and videos, where labels are rendered using LaTeX (`text.usetex=True` in Matplotlib). We thus encourage the users to do the following:
 
 ### Linux
 
