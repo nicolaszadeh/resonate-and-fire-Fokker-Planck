@@ -49,20 +49,23 @@ T = T_phys
 
 # Grid level for PDE
 # n=4
+# n=12
 n = 30
 
 # PDE time steps
 # Nt_user = 5001
+# Nt_user = 10001
 Nt_user = 100001
 
 # Brian parameters
-N_ENSEMBLE=1
+N_RUNS=1
 Nt_Brian = Nt_user
 BRIAN_SAMPLE_DT = T_phys / Nt_Brian   # seconds
 
-# NE = 2000
-NE = 100000
-NI = 0
+# NE = 8000
+# NI=2000
+NE = 80000
+NI = 20000
 N_BRIAN = NE + NI
 
 # Brian activity bin width
@@ -632,14 +635,14 @@ if RUN_BRIAN:
         dI/dt = -I/taus : amp
         '''
 
-        activity_runs = np.empty((N_ENSEMBLE, len(tb_bin)), dtype=float)
-        mean_x_runs = np.empty((N_ENSEMBLE, Nt_Brian), dtype=float)
-        rho_x_runs = np.empty((N_ENSEMBLE, len(x)), dtype=float)
+        activity_runs = np.empty((N_RUNS, len(tb_bin)), dtype=float)
+        mean_x_runs = np.empty((N_RUNS, Nt_Brian), dtype=float)
+        rho_x_runs = np.empty((N_RUNS, len(x)), dtype=float)
         brian_times_ref = None
 
         t_brian0 = time.time()
 
-        for run_id in range(N_ENSEMBLE):
+        for run_id in range(N_RUNS):
             start_scope()
             defaultclock.dt = delta_t * second
             # defaultclock.dt = delta_t / 10 * second
@@ -749,7 +752,7 @@ if RUN_BRIAN:
             net = Network(*brian_objects)
             net.run(T_phys * second,namespace={})
 
-            # activity in 1 ms bins
+            # activity in 5 ms bins
             spike_times = np.asarray(spikemon.t / second, dtype=float)
             counts, _ = np.histogram(spike_times, bins=edges)
             activity_runs[run_id, :] = counts / (N_BRIAN * BIN_WIDTH)
@@ -785,7 +788,7 @@ if RUN_BRIAN:
             rho_x_runs[run_id, :] = rho_tmp
 
             print(
-                f"run {run_id+1}/{N_ENSEMBLE} done, "
+                f"run {run_id+1}/{N_RUNS} done, "
                 f"total spikes = {spike_times.size}, "
                 f"max binned rate = {np.max(activity_runs[run_id, :]):.6e}"
             )
@@ -903,7 +906,7 @@ print(f"Mass initial   = {mass_of(f_initial):.16f}")
 print(f"Mass final     = {mass_of(f):.16f}")
 print(f"Min final f    = {np.min(f):.6e}")
 if RUN_BRIAN and (mean_activity_brian is not None):
-    print(f"Brian ensemble size = {N_ENSEMBLE}")
+    print(f"Brian ensemble size = {N_RUNS}")
 print("Saved graphs:")
 print(" - activity")
 print(" - mean voltage")
