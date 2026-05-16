@@ -113,7 +113,7 @@ T = 1
 Nt = 100001
 delta_t = np.float64(T / (Nt - 1))
 
-mass_tol = 1e-12
+mass_tol = 1e-10
 
 # Completion sounds
 

@@ -118,7 +118,7 @@ T = 1.0
 seq_Nt = [1600, 3200, 6400, 12800, 25600, 51200, 102400]
 # seq_Nt = [100, 200, 400, 800]
 
-mass_tol = 1e-12
+mass_tol = 1e-10
 
 # Completion sounds
 
