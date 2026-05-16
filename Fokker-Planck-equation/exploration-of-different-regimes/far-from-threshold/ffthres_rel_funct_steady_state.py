@@ -947,15 +947,14 @@ def compute_reference_state():
     print(f"Nt_inf           = {Nt_inf}")
 
     f = f_initial.copy()
-    N = compute_activity(f)
 
     for k in range(1, Nt_inf):
-        f, N = step(f)
+        f, N_k_minus_1 = step(f)
 
         if (k % 10000 == 0) or (k == Nt_inf - 1):
             print(
                 f"[pass 1] k={k}/{Nt_inf-1}, t={k*delta_t:.4f}, "
-                f"N={N:.6e}, mass={mass_of(f):.16f}, "
+                f"N_k_minus_1={N_k_minus_1:.6e}, mass={mass_of(f):.16f}, "
                 f"min(f)={np.min(f):.6e}"
             )
 

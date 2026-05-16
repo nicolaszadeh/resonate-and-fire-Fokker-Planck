@@ -50,6 +50,7 @@ v_max = 30
 size_v = v_max - v_min
 V = max(abs(v_min), abs(v_max))
 
+# n=3
 n = 14
 
 # Electric parameters
@@ -68,6 +69,7 @@ else:
 
 # Time parameters
 T = 8
+# Nt=5001
 Nt = 50001
 delta_t = np.float64(T / (Nt - 1))
 
@@ -138,7 +140,7 @@ PLOT_DPI = 400
 
 # Video export parameters
 
-SAVE_VIDEO = True
+SAVE_VIDEO = False
 target_duration = 20.0
 fps = 30
 VIDEO_DPI = 120
@@ -865,7 +867,6 @@ try:
     f_plot = maybe_smooth(f)
     vmax_global = np.max(f_plot)
 
-    activities[0] = compute_activity(f)
     masses[0] = mass_of(f)
     entropies[0] = entropy_of(f)
     fishers[0] = fisher_of(f)
@@ -877,10 +878,10 @@ try:
     # Time loop
 
     for k in range(1, Nt):
-        f, N = step(f)
+        f, N_k_minus_1 = step(f)
         f_plot = maybe_smooth(f)
 
-        activities[k] = N
+        activities[k-1] = N_k_minus_1
         masses[k] = mass_of(f)
         entropies[k] = entropy_of(f)
         fishers[k] = fisher_of(f)
@@ -896,11 +897,12 @@ try:
         if (k % 10000 == 0) or (k == Nt - 1):
             print(
                 f"k={k}/{Nt-1}, t={times[k]:.4f}, "
-                f"N={activities[k]:.6e}, mass={masses[k]:.16f}, "
+                f"N_k_minus_1={N_k_minus_1:.6e}, mass={masses[k]:.16f}, "
                 f"S={entropies[k]:.16f}, I={fishers[k]:.16f}, "
                 f"min(f)={np.min(f):.6e}"
             )
 
+    activities[-1]=compute_activity(f)
     print(f"Simulation done in {time.time() - start_time:.2f} s")
 
     # Save snapshots / snapshot grid
