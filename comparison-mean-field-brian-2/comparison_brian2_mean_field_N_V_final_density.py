@@ -58,7 +58,6 @@ n = 30
 Nt_user = 100001
 
 # Brian parameters
-N_RUNS=1
 Nt_Brian = Nt_user
 BRIAN_SAMPLE_DT = T_phys / Nt_Brian   # seconds
 
@@ -635,14 +634,14 @@ if RUN_BRIAN:
         dI/dt = -I/taus : amp
         '''
 
-        activity_runs = np.empty((N_RUNS, len(tb_bin)), dtype=float)
-        mean_x_runs = np.empty((N_RUNS, Nt_Brian), dtype=float)
-        rho_x_runs = np.empty((N_RUNS, len(x)), dtype=float)
+        activity_runs = np.empty((1, len(tb_bin)), dtype=float)
+        mean_x_runs = np.empty((1, Nt_Brian), dtype=float)
+        rho_x_runs = np.empty((1, len(x)), dtype=float)
         brian_times_ref = None
 
         t_brian0 = time.time()
 
-        for run_id in range(N_RUNS):
+        for run_id in range(1):
             start_scope()
             defaultclock.dt = delta_t * second
             # defaultclock.dt = delta_t / 10 * second
@@ -788,7 +787,7 @@ if RUN_BRIAN:
             rho_x_runs[run_id, :] = rho_tmp
 
             print(
-                f"run {run_id+1}/{N_RUNS} done, "
+                f"run {run_id+1}/{1} done, "
                 f"total spikes = {spike_times.size}, "
                 f"max binned rate = {np.max(activity_runs[run_id, :]):.6e}"
             )
@@ -906,7 +905,7 @@ print(f"Mass initial   = {mass_of(f_initial):.16f}")
 print(f"Mass final     = {mass_of(f):.16f}")
 print(f"Min final f    = {np.min(f):.6e}")
 if RUN_BRIAN and (mean_activity_brian is not None):
-    print(f"Brian ensemble size = {N_RUNS}")
+    print(f"Brian ensemble size = {1}")
 print("Saved graphs:")
 print(" - activity")
 print(" - mean voltage")

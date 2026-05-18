@@ -82,7 +82,7 @@ PLOT_VLIM = (-6, 21)
 
 # Optional clipping of the 3D height/color scale.
 # Use None for true max. 
-Z_CLIP_QUANTILE = 0.9999
+Z_CLIP_QUANTILE = 0.99999
 
 # View requested by the user.
 VIEW_ELEV = 35
