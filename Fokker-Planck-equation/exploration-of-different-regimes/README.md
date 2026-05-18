@@ -1,6 +1,7 @@
 The three folders in this sub-repository all contain:
 - a *rel_funct_steady_state.py script, which creates a .npz file containing the values of the numerical solution obtained via our scheme at T_inf>T. Booleans allow to obtain (or not) a 2D plot of that state, multiple 3D plots from pre-defined angles, but also relative entropy and Fisher information computed on [0,T].
-- a *vid_snaps_std_funct.py script, containing booleans allowing to witness the evolution of a solution in a given regime on [0,T], through a video or snapshots. Graphs displaying the values of functionals of interest through time, such as the all-important mean-voltage X(t), network activity N(t) or entropy and Fisher information can also be obtained.
+- a *vid_snaps_std_funct.py script, containing booleans allowing to witness the evolution of a solution in a given regime on [0,T], through a video or snapshots. Graphs displaying the values of functionals of interest through time, such as the all-important mean-voltage X(t), network activity N(t) or entropy and Fisher information can also be obtained
+- a *3d_vid.py script, which creates a .mp4 file displaying the evolution of a solution in a given regime on [0,T_3d]. There is an important (yet optional) clipping parameter which allows to cut the highest values of the function, and to plot accordingly to them, as well as choosing the colorscale thanks to that clipping.
 
 The outputs can be found inside of an automatically created tree structure in a 'Results' folder, appearing where the script is stored. 
 
