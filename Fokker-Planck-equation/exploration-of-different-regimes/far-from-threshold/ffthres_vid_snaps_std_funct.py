@@ -375,9 +375,9 @@ def entropy_of(f):
 
 def fisher_of(f):
     """
-    Discrete Fisher information using the robust identity
+    Discrete Fisher information using the identity
 
-        I(f) = 4 \int |\nabla sqrt(f)|^2 dx dv.
+        I_{\mathrm{F}}(f) = 4 \int |\nabla sqrt(f)|^2 dx dv.
     """
     g = np.sqrt(np.maximum(f, 0.0))
     gx = np.gradient(g, delta_x, axis=0)
@@ -967,7 +967,7 @@ try:
             t=times,
             y=entropies,
             xlabel=r"$t$ (s)",
-            ylabel=r"$H(f)(t)$",
+            ylabel=r"$S(t)$",
             title=None,
             filename_base=diag_base + "_entropy",
             sci_y=False,
@@ -979,7 +979,7 @@ try:
             t=times,
             y=fishers,
             xlabel=r"$t$ (s)",
-            ylabel=r"$I(f)(t)$",
+            ylabel=r"$I_{\mathrm{F}}(t)$",
             title=None,
             filename_base=diag_base + "_fisher",
             sci_y="auto",
