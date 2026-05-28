@@ -8,7 +8,7 @@ The three folders in this sub-repository all contain:
 
 The outputs can be found inside of an automatically created tree structure in a 'Results' folder, appearing where the script is stored. 
 
-IMPORTANT: should the user want to modify the values of $ u_{\rm F}, u_{\rm R}, x_{\rm min}, x_{\rm max}, V$, we encourage them to take integer values as for the moment our grid construction can only give guarantees under this format.
+IMPORTANT: should the user want to modify the values of $u_\mathrm{F}, u_\mathrm{R}, x_\mathrm{min}, x_\mathrm{max}, V$, we encourage them to take integer values as for the moment our grid construction can only give guarantees under this format.
 
 The computation can be long if an important precision is asked for, a boolean 'USE_SOUND' is then implemented (by default at 'True') which plays a different melody in case of success or failure in the execution of the routine.
 
