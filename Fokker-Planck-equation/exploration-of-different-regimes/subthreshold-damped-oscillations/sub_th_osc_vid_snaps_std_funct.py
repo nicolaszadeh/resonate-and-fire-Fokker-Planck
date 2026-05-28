@@ -309,8 +309,11 @@ def apply_tex_ticks(ax):
     ax.yaxis.set_major_formatter(tex_relevant_tick_formatter())
 
 def apply_tex_colorbar_ticks(cbar):
-    cbar.ax.yaxis.set_major_formatter(tex_relevant_tick_formatter())
-    cbar.update_ticks()
+    ticks = np.asarray(cbar.get_ticks(), dtype=float)
+    labels = [f"{z:.3f}" for z in ticks]
+
+    cbar.ax.set_yticks(ticks)
+    cbar.ax.set_yticklabels(labels)
 
 def tex_sci_num(x, pos=None):
     if abs(x) < 5e-15:
@@ -628,7 +631,7 @@ def make_density_figure(frame2d, time_value, norm, minimalist_axes=False):
     )
 
     cbar = fig.colorbar(img, ax=ax)
-    cbar.set_ticks(np.linspace(norm.vmin, norm.vmax, 7))
+    cbar.set_ticks(np.linspace(norm.vmin, norm.vmax, 5))
     cbar.set_label(r"$f$", rotation=0, labelpad=15)
     cbar.ax.yaxis.set_label_position("right")
     cbar.ax.yaxis.label.set_verticalalignment("center")
@@ -725,9 +728,7 @@ def save_snapshot_grid(frames, times_snap, outdir, stem, norm):
 
     cbar_ax = fig.add_axes([0.90, bottom, 0.025, top - bottom])
     cbar = fig.colorbar(last_img, cax=cbar_ax)
-    cbar.set_label(r"$f$", rotation=0, labelpad=18, fontsize=16)
-    cbar.ax.yaxis.set_label_position("right")
-    cbar.ax.yaxis.label.set_verticalalignment("center")
+    cbar.set_ticks(np.linspace(norm.vmin, norm.vmax, 5))
     apply_tex_colorbar_ticks(cbar)
 
     grid_filename = os.path.join(
@@ -1036,7 +1037,7 @@ try:
 
         def update(frame_idx):
             img.set_data(frames_video[frame_idx].T)
-            ax.set_title(rf"$t = {times_video[frame_idx]:g}\,$s")
+            ax.set_title(rf"$t = {times_video[frame_idx]:.2f}\,$s")
             return (img,)
 
         ani = animation.FuncAnimation(
@@ -1068,32 +1069,27 @@ try:
 
         def update_minimalist_axes(frame_idx):
             img_min.set_data(frames_video[frame_idx].T)
-            ax_min.set_title(rf"$t = {times_video[frame_idx]:g}\,$s")
+            ax_min.set_title(rf"$t = {times_video[frame_idx]:.2f}\,$s")
             return (img_min,)
 
-            def update_minimalist_axes(frame_idx):
-                img_min.set_data(frames_video[frame_idx].T)
-                ax_min.set_title(rf"$t = {times_video[frame_idx]:g}\,$s")
-                return (img_min,)
+        ani_min = animation.FuncAnimation(
+            fig_min,
+            update_minimalist_axes,
+            frames=len(frames_video),
+            interval=1000 / fps,
+            blit=False
+        )
 
-            ani_min = animation.FuncAnimation(
-                fig_min,
-                update_minimalist_axes,
-                frames=len(frames_video),
-                interval=1000 / fps,
-                blit=False
-            )
+        video_filename_minimalist = video_filename.replace(
+            ".mp4",
+            f"{clip_tag}_minimal_axes_uR_uF_v0.mp4"
+        )
 
-            video_filename_minimalist = video_filename.replace(
-                ".mp4",
-                f"{clip_tag}_minimal_axes_uR_uF_v0.mp4"
-            )
+        ani_min.save(video_filename_minimalist, writer=writer, dpi=VIDEO_DPI)
 
-            ani_min.save(video_filename_minimalist, writer=writer, dpi=VIDEO_DPI)
+        print("Minimalist axes video saved to:", os.path.abspath(video_filename_minimalist))
 
-            print("Minimalist axes video saved to:", os.path.abspath(video_filename_minimalist))
-
-            plt.close(fig_min)
+        plt.close(fig_min)
 
 except Exception as e:
     print("Simulation failed:", e)
