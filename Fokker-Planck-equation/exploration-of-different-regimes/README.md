@@ -1,4 +1,4 @@
-The three folders in this sub-repository all contain:
+The four folders in this sub-repository all contain:
 
 - a *rel_funct_steady_state.py script, which creates a .npz file containing the values of the numerical solution obtained via our scheme at $T_{\rm inf}>T$. Booleans allow to obtain (or not) a 2D plot of that state, multiple 3D plots from pre-defined angles, but also relative entropy and Fisher information computed on $[0,T]$.
 

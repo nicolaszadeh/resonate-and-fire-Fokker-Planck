@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Stationary states and relative functionals for the self-entertained-oscillations regime
+Stationary states and relative functionals for the self-sustained-oscillations regime
 
 Pass 1:
     run until T_inf to compute f_inf, N_inf.
