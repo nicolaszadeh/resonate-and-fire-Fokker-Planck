@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 3D video of the density f(x,v,t) produced by the 
-semi-implicit upwind scheme in the self-sustained-oscillations regime.
+semi-implicit upwind scheme in the feedback-driven-oscillations regime.
 
 Nicolas Zadeh, May the 15th, 2026.
 """

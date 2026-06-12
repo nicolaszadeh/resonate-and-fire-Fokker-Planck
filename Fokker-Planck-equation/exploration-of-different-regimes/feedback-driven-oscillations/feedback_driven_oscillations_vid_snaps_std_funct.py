@@ -8,7 +8,7 @@ Vectorized tri banded solver and optional:
     - entropy
     - Fisher information
 
-in the self-sustained-oscillations regime
+in the feedback-driven-oscillations regime
 
 Created on Thu Apr 23 16:05:52 2026
 @author: Nicolas Zadeh

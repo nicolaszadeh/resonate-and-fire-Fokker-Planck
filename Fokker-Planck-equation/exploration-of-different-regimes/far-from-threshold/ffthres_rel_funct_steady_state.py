@@ -13,6 +13,9 @@ Constraint:
 
 Relative entropy:
     H_rel(t) = -\int f_inf log(f(t) / f_inf)
+    
+Quadrative relative entropy:
+    H^quad_rel(t) = \int f_inf * ((f(t) - f_inf) / f_inf)**2.
 
 Relative Fisher:
     I_rel(t) = 4 \int f_inf |\nabla sqrt(f(t)/f_inf)|²
@@ -121,6 +124,7 @@ SAVE_STEADY_STATE_PLOT = True
 SAVE_STEADY_STATE_3D_VIEWS = True
 
 SAVE_RELATIVE_ENTROPY_PLOT = True
+SAVE_RELATIVE_QUADRATIC_ENTROPY_PLOT = True
 SAVE_RELATIVE_FISHER_PLOT = True
 
 PLOT_DPI = 400
@@ -403,6 +407,28 @@ def relative_entropy_of(f, f_inf):
         )
     )
 
+def relative_quadratic_entropy_of(f, f_inf):
+    """
+    Quadratic relative entropy / weighted L2 distance:
+
+        H^quad_rel(t) = dx dv sum_{i,j} f_inf[i,j]
+                   * ((f[i,j] - f_inf[i,j]) / f_inf[i,j])**2
+
+                 = dx dv sum_{i,j} (f[i,j] - f_inf[i,j])**2 / f_inf[i,j].
+
+    Points where f_inf is exactly zero are excluded to avoid division by zero.
+    In this code these are boundary/structural zeros.
+    """
+    mask = f_inf > 0.0
+
+    ratio_minus_one = f[mask] / f_inf[mask] - 1.0
+
+    return np.float64(
+        delta_x * delta_v * np.sum(
+            f_inf[mask] * ratio_minus_one**2,
+            dtype=np.float64
+        )
+    )
 
 def relative_fisher_of(f, f_inf):
     """
@@ -1046,23 +1072,27 @@ def rerun_after_reference(f_inf, N_inf):
     times = np.linspace(0.0, T, Nt, dtype=np.float64)
 
     relative_entropies = np.empty(Nt, dtype=np.float64)
+    relative_quadratic_entropies = np.empty(Nt, dtype=np.float64)
     relative_fishers = np.empty(Nt, dtype=np.float64)
 
     f = f_initial.copy()
 
     relative_entropies[0] = relative_entropy_of(f, f_inf)
+    relative_quadratic_entropies[0] = relative_quadratic_entropy_of(f, f_inf)
     relative_fishers[0] = relative_fisher_of(f, f_inf)
 
     for k in range(1, Nt):
         f, N = step(f)
 
         relative_entropies[k] = relative_entropy_of(f, f_inf)
+        relative_quadratic_entropies[k] = relative_quadratic_entropy_of(f, f_inf)
         relative_fishers[k] = relative_fisher_of(f, f_inf)
 
         if (k % 10000 == 0) or (k == Nt - 1):
             print(
                 f"[pass 2] k={k}/{Nt-1}, t={times[k]:.4f}, "
                 f"Hrel={relative_entropies[k]:.6e}, "
+                f"Hquadrel={relative_quadratic_entropies[k]:.6e}, "
                 f"Irel={relative_fishers[k]:.6e}, "
                 f"min(f)={np.min(f):.6e}"
             )
@@ -1075,6 +1105,18 @@ def rerun_after_reference(f_inf, N_inf):
             ylabel=r"$\mathcal{H}_{\mathrm{rel}}(t)$",
             title=None,
             filename_base=diag_base + "_relative_entropy",
+            sci_y="auto",
+            hide_yticks=True
+        )
+        
+    if SAVE_RELATIVE_QUADRATIC_ENTROPY_PLOT:
+        save_curve_plot(
+            t=times,
+            y=relative_quadratic_entropies,
+            xlabel=r"$t$ (s)",
+            ylabel=r"$\mathcal{H}^{\mathrm{quad}}_{\mathrm{rel}}(t)$",
+            title=None,
+            filename_base=diag_base + "_quadratic_relative_entropy",
             sci_y="auto",
             hide_yticks=True
         )
