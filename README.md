@@ -116,7 +116,7 @@ Functionals of interest, such as mean voltage, activity, entropy, Fisher informa
 # How to use
 - The user just has to download the *sub*-repository containing the code they are interested in. Of course downloading the entire repository also works.
 - The execution of the Python code will produce results on their computer.
-- The parameters are by default quite demanding, they can of course edit them to obtain less precision, but also different results from ours if they want to get different initial conditions or model parameters for example.
+- The parameters are by default quite demanding, they can of course edit them to obtain less precision, but also different results from ours if they want to get different initial conditions or model parameters for example. For technical reasons, however, we recommend keeping the values of $u_{\rm R}$, $u_{\rm F}$, and $V$ as integers.
 - May they want to launch the scripts with demanding parameters, we implemented sound subroutines inside them which announce when the scripts are over (with a different melody depending on whether the execution was successful or not).
 - We insist on the fact that the codebase was intentionally organized so that each sub-repository can be used independently, without requiring the others. Actually, at the exception of the "parallel-launcher" codes, all the codes can work by just having the code on one's machine, without any need for the entire sub-repository.
 
