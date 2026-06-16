@@ -1,8 +1,10 @@
-The presented scripts give as an output 3 comparison graphs, for the activity of the network, the mean voltage, as well as the final voltage-density at the final time in the experiment, where both the numerical solution to the pde obtained via our scheme appear and the result of large scale Brian 2 run.
+The two presented scripts give as an output 3 comparison graphs, for the activity of the network, the mean voltage, as well as the final voltage-density at the final time in the experiment, where both the numerical solution to the pde obtained via our scheme appear and the result of large scale Brian 2 run.
 
 In the script ending with "std" the initialization is made after a continuous gaussian, and when changing the number of runs, the mean of the observables is plotted, as well as one standard deviation around it.
 
 In the script without the "std" the initialization is made after the initial pdf, on the grid, and it is made for a single run.
+
+In the subfolder named "sweeps" there are scripts sweeping parameters related to the modelization to gauge their influence on the accuracy of the kinetic theory with the point neuron simulations. The outputs are a .csv file with 2-norms of the differences for the mean voltage and the activity, as well as the same three comparative graphs that in the two scripts presented at the top of this README. 
 
 Of course Brian 2 will need to be implemented on the user's computer. More information on Brian 2 can be found in the README file at the root of the repository.
 
