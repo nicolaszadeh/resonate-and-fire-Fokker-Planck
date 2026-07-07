@@ -8,7 +8,7 @@
       "orcid": "0009-0009-7819-8196"
     }
   ],
-  "license": "MIT",
+  "license": "mit",
   "access_right": "open",
   "version": "1.0.0",
   "language": "eng",
@@ -26,21 +26,9 @@
     {
       "identifier": "https://github.com/nicolaszadeh/resonate-and-fire-Fokker-Planck",
       "relation": "isSupplementTo",
-      "scheme": "url"
+      "resource_type": "software"
     }
   ],
-  "subjects": [
-    {
-      "term": "Computational neuroscience"
-    },
-    {
-      "term": "Numerical analysis of PDEs"
-    },
-    {
-      "term": "Kinetic Fokker-Planck equations"
-    },
-    {
-      "term": "Mathematical neuroscience"
-    }
-  ]
+  "communities": [],
+  "grants": []
 }
