@@ -20,15 +20,8 @@
     "mean-field limit",
     "resonate and fire neurons",
     "numerical analysis",
-    "particle simulations"
-  ],
-  "related_identifiers": [
-    {
-      "scheme": "url",
-      "identifier": "https://github.com/nicolaszadeh/resonate-and-fire-Fokker-Planck",
-      "relation": "isSupplementTo",
-      "resource_type": "software"
-    }
+    "particle simulations",
+    "mathematical neuroscience"
   ],
   "communities": [],
   "grants": []
