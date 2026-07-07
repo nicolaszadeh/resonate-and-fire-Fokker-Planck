@@ -1,0 +1,47 @@
+{
+  "title": "Finite-difference scheme for a nonlinear kinetic Fokker-Planck equation arising from noisy resonate and fire neuronal networks",
+  "upload_type": "software",
+  "description": "Source code accompanying the manuscript 'Kinetic description and numerical study of a network of noisy
+resonate and fire neurons'. The repository contains the numerical implementation used to reproduce the finite-difference simulations, particle-system comparisons, and figures presented in the paper.",
+  "creators": [
+    {
+      "name": "Zadeh, Nicolas",
+      "orcid": "0009-0009-7819-8196"
+    }
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "version": "1.0.0",
+  "language": "eng",
+  "keywords": [
+    "computational neuroscience",
+    "kinetic equations",
+    "Fokker-Planck equation",
+    "finite differences",
+    "mean-field limit",
+    "resonate and fire neurons",
+    "numerical analysis",
+    "particle simulations"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/nicolaszadeh/resonate-and-fire-Fokker-Planck",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ],
+  "subjects": [
+    {
+      "term": "Computational neuroscience"
+    },
+    {
+      "term": "Numerical analysis of PDEs"
+    },
+    {
+      "term": "Kinetic Fokker-Planck equations"
+    },
+    {
+      "term": "Mathematical neuroscience"
+    }
+  ]
+}
