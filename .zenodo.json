@@ -24,6 +24,7 @@
   ],
   "related_identifiers": [
     {
+      "scheme": "url",
       "identifier": "https://github.com/nicolaszadeh/resonate-and-fire-Fokker-Planck",
       "relation": "isSupplementTo",
       "resource_type": "software"
