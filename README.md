@@ -3,6 +3,12 @@ Kinetic Fokker-Planck equation for a network of noisy resonate-and-fire neurons
 </h1>
 
 <p align="center">
+  <a href="https://doi.org/10.5281/zenodo.21246912">
+    <img src="https://zenodo.org/badge/DOI/10.5281/zenodo.21246912.svg" alt="DOI">
+  </a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/Python-3.11-blue">
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey">
   <img src="https://img.shields.io/badge/license-MIT-green">
