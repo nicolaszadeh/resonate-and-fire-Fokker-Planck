@@ -192,9 +192,9 @@ All the codebase has been extensively tested on Windows, Linux and MacOS.
 
 # Citation
 
-If you use this repository in academic work, please cite the associated article when available.
+If you use this repository in academic work, please cite [the Cambridge Open Engage preprint](https://doi.org/10.33774/coe-2026-n2ssp), and the associated article when available.
 
-In the meantime, please reference the repository itself:
+For the software implementation, please also cite the repository:
 
 ```text
 Nicolas Zadeh,
